@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 package main
 
 import (
-	"errors"
+	"fmt"
 	"log"
 )
 
@@ -178,7 +178,7 @@ func (b *Book) Tick() error {
 		}
 	}
 
-	asset := b.Market[:2]
+	asset := b.Market[:3]
 	currency := b.Market[3:]
 	assetBal, err := b.Ex.GetBalance(asset)
 	if err != nil {
@@ -186,7 +186,7 @@ func (b *Book) Tick() error {
 	}
 
 	if assetBal < reqAsset {
-		return errors.New("Not enough asset to place orders")
+		return fmt.Errorf("Not enough asset to place orders. Wanted: %s%f, Have: %s%f", asset, reqAsset, asset, assetBal)
 	}
 
 	currencyBal, err := b.Ex.GetBalance(currency)
@@ -195,7 +195,7 @@ func (b *Book) Tick() error {
 	}
 
 	if currencyBal < reqCurrency {
-		return errors.New("Not enough currency to place orders")
+		return fmt.Errorf("Not enough currency to place orders. Wanted: %s%f, Have: %s%f", currency, reqCurrency, currency, currencyBal)
 	}
 
 	// re-submit filled orders
