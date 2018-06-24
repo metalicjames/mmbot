@@ -40,10 +40,11 @@ func main() {
 	go func() {
 		for range ticker.C {
 			for _, b := range books {
-				if err := b.Tick(); err != nil {
-					log.Printf("%v", err)
-					return
-				}
+				go func(b *Book) {
+					if err := b.Tick(); err != nil {
+						log.Printf("%v", err)
+					}
+				}(b)
 			}
 		}
 	}()
