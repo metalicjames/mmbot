@@ -22,6 +22,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -56,7 +57,7 @@ func (vp *Vertpig) GetTicker(market string) (Ticker, error) {
 		return Ticker{}, errors.New(m["message"].(string))
 	}
 
-	var ticker GetTickerResp
+	ticker := GetTickerResp{"0", "0", "0"}
 	mapstructure.Decode(m["result"], &ticker)
 
 	var ret Ticker
@@ -197,11 +198,14 @@ func hmacSign(message string, secret string) string {
 }
 
 func (vp *Vertpig) sendRecv(url string) (map[string]interface{}, error) {
+	log.Printf("Req: %s", url)
+
 	req, err := http.NewRequest("GET", url, nil)
 	req.Header.Add("apisign", hmacSign(url, vp.secret))
 
 	resp, err := vp.client.Do(req)
 	if err != nil {
+		log.Printf("Req err: %v", err)
 		return nil, err
 	}
 
@@ -213,6 +217,7 @@ func (vp *Vertpig) sendRecv(url string) (map[string]interface{}, error) {
 	decoder := json.NewDecoder(resp.Body)
 	err = decoder.Decode(&r)
 	if err != nil {
+		log.Printf("Resp err: %v", err)
 		return nil, err
 	}
 
