@@ -201,9 +201,16 @@ func (b *Book) Tick() error {
 	// re-submit filled orders
 	for i, order := range b.Orders {
 		if order.Filled && !order.Middle {
+		TryAgain:
 			uid, err := b.Ex.PlaceOrder(order.Buy, b.Market, order.Quantity, order.Rate)
 			if err != nil {
 				log.Printf("%+v", err)
+
+				if err.Error() == "POST_ONLY_FAILED" {
+					b.Orders[i].Buy = !b.Orders[i].Buy
+					goto TryAgain
+				}
+
 				continue
 			}
 
