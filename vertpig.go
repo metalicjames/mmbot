@@ -26,7 +26,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-const API = "https://www.vertpig.com/api/v1.1"
+var API = "https://www.vertpig.com/api/v1.1"
 
 type Vertpig struct {
 	apikey string
