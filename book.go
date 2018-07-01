@@ -202,6 +202,7 @@ func (b *Book) Tick() error {
 	for i, order := range b.Orders {
 		if order.Filled && !order.Middle {
 		TryAgain:
+			order = b.Orders[i]
 			uid, err := b.Ex.PlaceOrder(order.Buy, b.Market, order.Quantity, order.Rate)
 			if err != nil {
 				log.Printf("%+v", err)
