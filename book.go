@@ -136,10 +136,21 @@ func (b *Book) Tick() error {
 		for i, order := range b.Orders {
 			run := false
 			if order.Filled && i < orig {
+				log.Printf("Setting middle at %d, price: %f because it's the first filled order we saw", i, order.Rate)
 				run = true
 			} else if i+1 < len(b.Orders) {
 				if !b.Orders[i+1].Filled && order.Filled {
+					log.Printf("Setting middle at %d, price: %f because the next order is unfilled", i, order.Rate)
+
 					run = true
+
+					for j := i + 1; j < len(b.Orders); j++ {
+						if b.Orders[j].Filled {
+							log.Printf("Actually scratch that, there is a later filled order at %d", j)
+							run = false
+							break
+						}
+					}
 				}
 			}
 
@@ -149,9 +160,9 @@ func (b *Book) Tick() error {
 			}
 		}
 
-		b.Orders[middle].Middle = true
-
 		log.Printf("New middle: %d", middle)
+
+		b.Orders[middle].Middle = true
 
 		for i, order := range b.Orders {
 			if order.Filled {
