@@ -22,7 +22,7 @@ import (
 )
 
 func SaveStruct(filename string, obj interface{}) error {
-	out, err := json.Marshal(obj)
+	out, err := json.MarshalIndent(obj, "", "    ")
 	if err != nil {
 		return err
 	}
