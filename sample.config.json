@@ -1,0 +1,30 @@
+{
+    "Apikey": "MYAPIKEY",
+    "Secret": "MYAPISECRET",
+    "Markets": [
+        {
+            "Market": "VTCBTC",
+            "High": 0.0041,
+            "Low": 0.00015,
+            "Start": 0.0024128,
+            "Interval": 0.01,
+            "Quantity": 0.004
+        },
+        {
+            "Market": "VTCLTC",
+            "High": 0.04,
+            "Low": 0.007,
+            "Start": 0.0156372,
+            "Interval": 0.005,
+            "Quantity": 0.007
+        },
+        {
+            "Market": "VTCEUR",
+            "High": 2.7,
+            "Low": 0.02,
+            "Start": 1.2,
+            "Interval": 0.01,
+            "Quantity": 4.2
+        }
+    ]
+}
