@@ -44,7 +44,13 @@ type Book struct {
 func NewBook(market string, high float64, low float64, start float64, interval float64, quantity float64, exchange Exchange) *Book {
 	b := &Book{nil, market, high, low, start, interval, exchange, true}
 
-	err := LoadStruct("./vpbook"+market, b)
+	var err error
+	switch exchange.Name() {
+	case "poloniex":
+		err = LoadStruct("./polobook"+market, b)
+	case "vertpig":
+		err = LoadStruct("./vpbook"+market, b)
+	}
 	if err != nil {
 		log.Printf("%v", err)
 
@@ -85,7 +91,13 @@ func (b *Book) Tick() error {
 	// Update order statuses (filled)
 
 	defer func() {
-		err := SaveStruct("./vpbook"+b.Market, b)
+		var err error
+		switch b.Ex.Name() {
+		case "poloniex":
+			err = SaveStruct("./polobook"+b.Market, b)
+		case "vertpig":
+			err = SaveStruct("./vpbook"+b.Market, b)
+		}
 		if err != nil {
 			log.Printf("%v", err)
 		}
@@ -189,15 +201,23 @@ func (b *Book) Tick() error {
 		}
 	}
 
-	asset := b.Market[:3]
-	currency := b.Market[3:]
+	var asset string
+	var currency string
+	switch b.Ex.Name() {
+	case "poloniex":
+		asset = b.Market[4:]
+		currency = b.Market[:3]
+	case "vertpig":
+		asset = b.Market[:3]
+		currency = b.Market[3:]
+	}
 	assetBal, err := b.Ex.GetBalance(asset)
 	if err != nil {
 		return err
 	}
 
 	if assetBal < reqAsset {
-		return fmt.Errorf("Not enough asset to place orders. Wanted: %s%f, Have: %s%f", asset, reqAsset, asset, assetBal)
+		return fmt.Errorf("Not enough asset to place orders. Wanted: %s %f, Have: %s %f", asset, reqAsset, asset, assetBal)
 	}
 
 	currencyBal, err := b.Ex.GetBalance(currency)
