@@ -34,7 +34,7 @@ type Ticker struct {
 // Exchange is an interface that implements a generic
 // exchange orderbook.
 type Exchange interface {
-	// Name returs the name of this type of exchange
+	// Name returns the name of this type of exchange
 	Name() string
 
 	// PlaceOrder places a new order in the market. It returns the UID of the

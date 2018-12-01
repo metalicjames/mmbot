@@ -204,6 +204,9 @@ func (b *Book) Tick() error {
 	var asset string
 	var currency string
 	switch b.Ex.Name() {
+	case "bittrex":
+		asset = b.Market[4:]
+		currency = b.Market[:3]
 	case "poloniex":
 		asset = b.Market[4:]
 		currency = b.Market[:3]

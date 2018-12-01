@@ -22,12 +22,12 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/mitchellh/mapstructure"
 )
 
-// var API = "https://www.bittrex.com/api/v1.1"
-// use this when you want bittrex
+var BITTREX_API = "https://bittrex.com/api/v1.1"
 
 type Bittrex struct {
 	apikey string
@@ -87,7 +87,7 @@ func BittrexConnect(apikey string, secret string) *Bittrex {
 
 // public/getticker
 func (bx *Bittrex) GetTicker(market string) (Ticker, error) {
-	url := API + "/public/getticker?market=" + market
+	url := BITTREX_API + "/public/getticker?market=" + market
 	m, err := bx.sendRecv(url)
 	if err != nil {
 		return Ticker{}, err
@@ -109,7 +109,7 @@ func (bx *Bittrex) GetTicker(market string) (Ticker, error) {
 
 // public/BtMarkets
 func (bx *Bittrex) BtMarkets(market string) (BtMarket, error) {
-	url := API + "/public/getticker?market=" + market
+	url := BITTREX_API + "/public/getticker?market=" + market
 	m, err := bx.sendRecv(url)
 	if err != nil {
 		return BtMarket{}, err
@@ -126,7 +126,7 @@ func (bx *Bittrex) BtMarkets(market string) (BtMarket, error) {
 
 // public/BtMarketsummaries
 func (bx *Bittrex) BtMarketSummaries() (BtMarketSummaries, error) {
-	url := API + "/public/BtMarketsummaries"
+	url := BITTREX_API + "/public/BtMarketsummaries"
 
 	m, err := bx.sendRecv(url)
 	if err != nil {
@@ -157,7 +157,7 @@ func (bx *Bittrex) BtMarketSummaries() (BtMarketSummaries, error) {
 
 // public/getorderbook
 func (bx *Bittrex) GetOrderBook(market string) (BtOrderBooks, error) {
-	url := API + "/public/getorderbook?market=" + market + "&type=both"
+	url := BITTREX_API + "/public/getorderbook?market=" + market + "&type=both"
 
 	m, err := bx.sendRecv(url)
 	if err != nil {
@@ -178,7 +178,7 @@ func (bx *Bittrex) GetOrderBook(market string) (BtOrderBooks, error) {
 
 // market/cancel
 func (bx *Bittrex) CancelOrder(UID string) error {
-	url := API + "/market/cancel?apikey=" + bx.apikey + "&nonce=1&uuid=" + UID
+	url := BITTREX_API + "/market/cancel?apikey=" + bx.apikey + "&uuid=" + UID
 
 	m, err := bx.sendRecv(url)
 	if err != nil {
@@ -194,7 +194,7 @@ func (bx *Bittrex) CancelOrder(UID string) error {
 
 // market/getopenorders
 func (bx *Bittrex) GetOrders(market string) ([]string, error) {
-	url := API + "/market/getopenorders?apikey=" + bx.apikey + "&market=" + market
+	url := BITTREX_API + "/market/getopenorders?apikey=" + bx.apikey + "&market=" + market
 
 	m, err := bx.sendRecv(url)
 	if err != nil {
@@ -244,7 +244,7 @@ func (bx *Bittrex) PlaceOrder(buy bool, market string,
 
 // account/getbalance
 func (bx *Bittrex) GetBalance(asset string) (float64, error) {
-	url := API + "/account/getbalances?apikey=" + bx.apikey
+	url := BITTREX_API + "/account/getbalances?apikey=" + bx.apikey
 
 	m, err := bx.sendRecv(url)
 	if err != nil {
@@ -268,10 +268,13 @@ func (bx *Bittrex) GetBalance(asset string) (float64, error) {
 }
 
 func (bx *Bittrex) sendRecv(url string) (map[string]interface{}, error) {
+	url += "&nonce=" + strconv.FormatInt(time.Now().UnixNano(), 10)
+
 	log.Printf("Req: %s", url)
 
 	req, err := http.NewRequest("GET", url, nil)
-	req.Header.Add("apisign", hmacSign(url, bx.secret))
+	sig := hmacSign([]byte(url), []byte(bx.secret))
+	req.Header.Add("apisign", sig)
 
 	resp, err := bx.client.Do(req)
 	if err != nil {
@@ -287,11 +290,17 @@ func (bx *Bittrex) sendRecv(url string) (map[string]interface{}, error) {
 	decoder := json.NewDecoder(resp.Body)
 	err = decoder.Decode(&r)
 	if err != nil {
-		log.Printf("Resp err: %v", err)
+		var p []byte
+		decoder.Buffered().Read(p)
+		log.Printf("Resp err: %v, %s", err, string(p))
 		return nil, err
 	}
 
 	m = r.(map[string]interface{})
 
 	return m, nil
+}
+
+func (bx *Bittrex) Name() string {
+	return "bittrex"
 }

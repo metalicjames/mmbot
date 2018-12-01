@@ -45,6 +45,8 @@ func Load() ([]*Book, error) {
 		exchange = PoloniexConnect(conf.Apikey, []byte(conf.Secret))
 	case "vertpig":
 		exchange = VertpigConnect(conf.Apikey, []byte(conf.Secret))
+	case "bittrex":
+		exchange = BittrexConnect(conf.Apikey, conf.Secret)
 	}
 
 	var ret []*Book
