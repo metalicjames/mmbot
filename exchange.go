@@ -16,6 +16,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
 package main
 
+import (
+	"crypto/hmac"
+	"crypto/sha512"
+	"encoding/hex"
+)
+
 // Ticker returns the current price ticker for market of the asset
 // priced in the currency. The Bid is the highest buy price and the ask
 // is the lowest sell price. The Last is the price of the last trade executed.
@@ -28,6 +34,8 @@ type Ticker struct {
 // Exchange is an interface that implements a generic
 // exchange orderbook.
 type Exchange interface {
+	// Name returs the name of this type of exchange
+	Name() string
 
 	// PlaceOrder places a new order in the market. It returns the UID of the
 	// newly placed order or an error. PlaceOrder should not allow the placement
@@ -50,4 +58,10 @@ type Exchange interface {
 	// GetBalance returns the available balance (funds that are not reserved for
 	// existing orders) for the given asset or returns an error.
 	GetBalance(asset string) (float64, error)
+}
+
+func hmacSign(message []byte, key []byte) string {
+	h := hmac.New(sha512.New, key)
+	h.Write(message)
+	return hex.EncodeToString(h.Sum(nil))
 }

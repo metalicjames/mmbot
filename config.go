@@ -17,9 +17,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 package main
 
 type Config struct {
-	Apikey  string
-	Secret  string
-	Markets []Market
+	Exchange string
+	Apikey   string
+	Secret   string
+	Markets  []Market
 }
 
 type Market struct {
@@ -38,11 +39,17 @@ func Load() ([]*Book, error) {
 		return nil, err
 	}
 
-	vp := VertpigConnect(conf.Apikey, conf.Secret)
+	var exchange Exchange
+	switch conf.Exchange {
+	case "poloniex":
+		exchange = PoloniexConnect(conf.Apikey, []byte(conf.Secret))
+	case "vertpig":
+		exchange = VertpigConnect(conf.Apikey, []byte(conf.Secret))
+	}
 
 	var ret []*Book
 	for _, m := range conf.Markets {
-		ret = append(ret, NewBook(m.Market, m.High, m.Low, m.Start, m.Interval, m.Quantity, vp))
+		ret = append(ret, NewBook(m.Market, m.High, m.Low, m.Start, m.Interval, m.Quantity, exchange))
 	}
 
 	return ret, nil

@@ -25,7 +25,7 @@ import (
 )
 
 func main() {
-	log.Printf("mmbot v0.0.4  Copyright (C) 2018  James Lovejoy.")
+	log.Printf("mmbot v0.0.5  Copyright (C) 2018  James Lovejoy.")
 	log.Printf("This program comes with ABSOLUTELY NO WARRANTY.")
 	log.Printf("This is free software, and you are welcome to redistribute it under certain conditions.")
 	log.Printf("Read the LICENSE and README for more details.")
@@ -36,7 +36,7 @@ func main() {
 		return
 	}
 
-	ticker := time.NewTicker(time.Second * 30)
+	ticker := time.NewTicker(time.Second * 3)
 	go func() {
 		for range ticker.C {
 			for _, b := range books {

@@ -17,9 +17,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 package main
 
 import (
-	"crypto/hmac"
-	"crypto/sha512"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"log"
@@ -33,11 +30,15 @@ const API = "https://www.vertpig.com/api/v1.1"
 
 type Vertpig struct {
 	apikey string
-	secret string
+	secret []byte
 	client *http.Client
 }
 
-func VertpigConnect(apikey string, secret string) *Vertpig {
+func (plo *Vertpig) Name() string {
+	return "vertpig"
+}
+
+func VertpigConnect(apikey string, secret []byte) *Vertpig {
 	return &Vertpig{apikey, secret, &http.Client{}}
 }
 
@@ -190,18 +191,11 @@ func (vp *Vertpig) PlaceOrder(buy bool, market string, quantity float64, rate fl
 	return m["result"].(map[string]interface{})["uuid"].(string), nil
 }
 
-func hmacSign(message string, secret string) string {
-	key := []byte(secret)
-	h := hmac.New(sha512.New, key)
-	h.Write([]byte(message))
-	return hex.EncodeToString(h.Sum(nil))
-}
-
 func (vp *Vertpig) sendRecv(url string) (map[string]interface{}, error) {
 	log.Printf("Req: %s", url)
 
 	req, err := http.NewRequest("GET", url, nil)
-	req.Header.Add("apisign", hmacSign(url, vp.secret))
+	req.Header.Add("apisign", hmacSign([]byte(url), vp.secret))
 
 	resp, err := vp.client.Do(req)
 	if err != nil {
