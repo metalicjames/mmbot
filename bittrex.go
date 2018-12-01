@@ -17,8 +17,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -219,7 +221,7 @@ func (bx *Bittrex) GetOrders(market string) ([]string, error) {
 // market/buylimit and market/selllimit
 func (bx *Bittrex) PlaceOrder(buy bool, market string,
 	quantity float64, rate float64) (string, error) {
-	url := API + "/market/"
+	url := BITTREX_API + "/market/"
 	if buy {
 		url += "buylimit"
 	} else {
@@ -286,13 +288,14 @@ func (bx *Bittrex) sendRecv(url string) (map[string]interface{}, error) {
 
 	var m map[string]interface{}
 
+	contents, _ := ioutil.ReadAll(resp.Body)
+	resp.Body = ioutil.NopCloser(bytes.NewReader(contents))
+
 	var r interface{}
 	decoder := json.NewDecoder(resp.Body)
 	err = decoder.Decode(&r)
 	if err != nil {
-		var p []byte
-		decoder.Buffered().Read(p)
-		log.Printf("Resp err: %v, %s", err, string(p))
+		log.Printf("Resp err: %v, %s", err, string(contents))
 		return nil, err
 	}
 

@@ -46,6 +46,8 @@ func NewBook(market string, high float64, low float64, start float64, interval f
 
 	var err error
 	switch exchange.Name() {
+	case "bittrex":
+		err = LoadStruct("./bittrexbook"+market, b)
 	case "poloniex":
 		err = LoadStruct("./polobook"+market, b)
 	case "vertpig":
@@ -93,6 +95,8 @@ func (b *Book) Tick() error {
 	defer func() {
 		var err error
 		switch b.Ex.Name() {
+		case "bittrex":
+			err = SaveStruct("./bittrexbook"+b.Market, b)
 		case "poloniex":
 			err = SaveStruct("./polobook"+b.Market, b)
 		case "vertpig":
@@ -241,7 +245,7 @@ func (b *Book) Tick() error {
 			if err != nil {
 				log.Printf("%+v", err)
 
-				if err.Error() == "POST_ONLY_FAILED" {
+				if err.Error() == "POST_ONLY_FAILED" || err.Error() == "INVALID_PERMISSION" {
 					b.Orders[i].Buy = !b.Orders[i].Buy
 					goto TryAgain
 				}
